@@ -1,2 +1,3 @@
 ---
 # vars file for wan_interfaces
+travel_router: false

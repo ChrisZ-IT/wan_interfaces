@@ -16,17 +16,24 @@
   register: passphrase
   changed_when: (passphrase.stdout)
 
+- name: Ensure wifi network info is up to date
+  ansible.builtin.replace:
+    path: /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+    regexp: 'network=\{\s*ssid="{{ wan_ssid }}"\s*.*?\s*\}'
+    replace: "{{ passphrase.stdout }}"
+  register: wlan_info
+
 - name: Ensure wifi network info exists in wlan0 config
   ansible.builtin.lineinfile:
     path: /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
     line: '{{ passphrase.stdout }}'
     state: present
+  when: (wlan_info.changed == false)
 
 - name: Ensure clear text passphrase is absent
   ansible.builtin.lineinfile:
     path: /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
     regexp: '{{ wan_pass_phrase }}'
-    line: ''
     state: absent
 
 - name: Ensure wpa_supplicant.conf country code is set
